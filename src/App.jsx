@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import "./App.css";
 import { ShoppingListItem } from "./components/ShoppingListItem";
+import { useCounterStore } from "./store/store";
 
 function App() {
   const [newItem, setNewItem] = useState("");
   const [shoppingList, setShoppingList] = useState([]);
+  const [searchShoppingList, setSearchShoppingList] = useState([]);
+
+  const listCounter = useCounterStore((state) => state.listCounter);
+  const searchVal = useState("");
 
   function handleAddItem(value) {
     if (!Boolean(value)) {
@@ -24,9 +29,25 @@ function App() {
     setShoppingList(shoppingList?.filter((i) => i !== item));
   }
 
+  function filterData(val) {
+    debugger;
+    if (val.trim() === "") {
+      setSearchShoppingList([]);
+    } else {
+      const temp = [...shoppingList];
+      const searchValue = temp?.filter((item) => {
+        return item.toLowerCase().includes(val.toLowerCase());
+      });
+      setSearchShoppingList(searchValue);
+    }
+  }
+
   return (
     <div className="container">
       <h1 className="mb-4">My Shopping List</h1>
+      <div className="mx-auto mt-1 text-lg font-normal text-white ">
+        Total shopped item :{listCounter}{" "}
+      </div>
 
       <div className="flex gap-4 pb-3 border-b-2 border-gray-700">
         <input
@@ -40,15 +61,32 @@ function App() {
           Add
         </button>
       </div>
+      <div className="pb-3 ">
+        <input
+          type="text"
+          placeholder="Search Your List"
+          className="h-8 flex-1"
+          onChange={(e) => filterData(e.target.value)}
+        />
+      </div>
       <div className="v__list-container overflow-y-scroll">
-        {shoppingList?.length > 0 &&
-          shoppingList?.map((item, index) => (
-            <ShoppingListItem
-              key={index}
-              item={item}
-              handleRemoveItem={handleRemoveItem}
-            />
-          ))}
+        {shoppingList?.length > 0
+          ? searchShoppingList?.length === 0
+            ? shoppingList?.map((item, index) => (
+                <ShoppingListItem
+                  key={index}
+                  item={item}
+                  handleRemoveItem={handleRemoveItem}
+                />
+              ))
+            : searchShoppingList?.map((item, index) => (
+                <ShoppingListItem
+                  key={index}
+                  item={item}
+                  handleRemoveItem={handleRemoveItem}
+                />
+              ))
+          : ""}
       </div>
     </div>
   );
